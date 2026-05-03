@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_39.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_41.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -2055,7 +2055,7 @@
 </head>
 <body>
 <div id="game">
-  <canvas id="world" width="2560" height="1398" style="width: 1707px; height: 932px;"></canvas>
+  <canvas id="world" width="2142" height="1089" style="width: 1428px; height: 726px;"></canvas>
 
   <!-- Mini-map -->
   <div class="minimap-wrap" id="minimapWrap">
@@ -3992,8 +3992,16 @@
     // Inside a scout drop-in it completes the action *if* the success
     // state is showing (i.e. the player has clicked an action button
     // and the Continue button is on screen).
+    // Inside the end-of-day summary it dismisses the modal (sending
+    // the player to drive to the hotel).
     if (e.key === 'Enter' && !typing) {
-      if (dossierOpen) {
+      // End-of-day summary takes precedence — it's a top-level screen
+      // overlay, so its Continue is the only meaningful Enter action.
+      const summaryEl = document.getElementById('shiftSummary');
+      if (summaryEl && !summaryEl.classList.contains('hidden')) {
+        e.preventDefault();
+        document.getElementById('summaryContinueBtn').click();
+      } else if (dossierOpen) {
         e.preventDefault();
         document.getElementById('completeBtn').click();
       } else if (scoutOpen) {
