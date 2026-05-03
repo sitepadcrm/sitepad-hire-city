@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_36.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_37.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -1978,6 +1978,32 @@
     .dash-brand .dash-brand-text { display: none; }
     .dash-divider { display: none; }
     .end-stats { grid-template-columns: 1fr 1fr; }
+
+    /* Hide world-overlay popups on small screens — on a phone they
+       cover most of the playable area. The player still gets:
+        - the F-button to drop in (which opens the full-screen dossier)
+        - the directional arrow + pulsing pin (telegraphs alerts)
+        - the day-ended hint (still shown, just compact — it's a
+          critical "drive to the hotel" prompt the player needs)
+       What we hide are the *passive* informational popups that
+       compete with the player's view: the proximity dossier card,
+       the post-drop-in visit summary, the shift briefing banner,
+       and the inline alert card. */
+    .scout-card,
+    .visit-summary,
+    .shift-briefing,
+    .alert-card {
+      display: none !important;
+    }
+    /* Day-ended hint stays visible but more compact */
+    .day-ended-hint {
+      font-size: 11px;
+      padding: 8px 14px 8px 12px;
+      max-width: calc(100vw - 16px);
+    }
+    .day-ended-hint .deh-text {
+      line-height: 1.25;
+    }
   }
 
   .hidden { display: none !important; }
@@ -4515,8 +4541,42 @@
     if (keys['arrowleft']) turn -= 1;
     if (keys['arrowright']) turn += 1;
     if (touchInput.active) {
-      throttle = -touchInput.y;
-      turn = touchInput.x;
+      // Screen-relative joystick:
+      //   The joystick gives a screen-space direction vector. We treat
+      //   that as the desired world heading (north up, east right) and
+      //   steer the car toward it. So drag-up makes the car drive
+      //   north regardless of which way it's currently facing — the
+      //   "GTA mobile" / twin-stick convention rather than throttle-
+      //   plus-rudder car-relative steering.
+      const stickMag = Math.hypot(touchInput.x, touchInput.y);
+      // Deadzone so a fingertip resting near centre doesn't twitch the car.
+      if (stickMag > 0.2) {
+        // Throttle scales with magnitude — gentle stick = slow drive,
+        // full stick = full speed.
+        throttle = Math.min(1, stickMag);
+        // Target world heading from the joystick direction. Canvas
+        // coordinates: x increases right, y increases DOWN, so Math.atan2
+        // (dy, dx) returns the world angle directly (since the world
+        // uses the same axis convention).
+        const targetAngle = Math.atan2(touchInput.y, touchInput.x);
+        let aDiff = targetAngle - me.angle;
+        while (aDiff >  Math.PI) aDiff -= Math.PI * 2;
+        while (aDiff < -Math.PI) aDiff += Math.PI * 2;
+        // Steer fully if aim is way off, gently if close. A wider zone
+        // (1.0 rad ≈ 57°) than the click-target steering (0.6 rad)
+        // because the joystick is the primary input on touch — needs
+        // to feel responsive, not nervous.
+        turn = Math.max(-1, Math.min(1, aDiff / 1.0));
+        // If the car is facing roughly the wrong way (>120°), let it
+        // do a short reverse instead of a full U-turn — feels less
+        // like dragging the car around when you push the joystick
+        // suddenly in the opposite direction.
+        if (Math.abs(aDiff) > Math.PI * 0.66 && Math.abs(me.speed) < 1.5) {
+          throttle = -throttle * 0.7;
+          // Reverse direction reverses steer feel
+          turn = -turn;
+        }
+      }
     }
 
     // Any keyboard driving input cancels the click-pin auto-drive so
