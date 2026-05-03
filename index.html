@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_38.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_39.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -218,8 +218,8 @@
     .picker-grid.cars { grid-template-columns: repeat(2, 1fr); }
     .picker-grid.chars { grid-template-columns: repeat(3, 1fr); }
 
-    /* Tighter padding so the card occupies less vertical space —
-       reduces (but doesn't eliminate) the need to scroll. */
+    /* Tighter card padding so they take less vertical space — reduces
+       (but doesn't eliminate) the need to scroll. */
     .title-card { padding: 28px 24px; }
     .picker-card { padding: 24px 22px; }
     .shift-summary-card { padding: 22px 20px; }
@@ -228,24 +228,9 @@
     .title-card h1 { font-size: 28px; }
     .title-card p.subtitle { font-size: 13px; }
     .picker-card h2 { font-size: 20px; }
-
-    /* Generous bottom space on the scroll container so the last
-       action button (Start your shift / Hit the road / Continue) is
-       reachable on Chrome mobile even when the URL bar is visible.
-       Combines:
-        - 96px raw padding for normal browsers
-        - safe-area-inset-bottom for iOS home indicator / Android nav
-        - extra margin under the card itself as belt-and-braces in
-          case the scroll container's padding is collapsed by a
-          flex/auto-margin interaction. */
-    .screen {
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
-    }
-    .title-card,
-    .picker-card,
-    .shift-summary-card {
-      margin-bottom: 24px;
-    }
+    /* Note: scroll-container padding-bottom and per-card margin-bottom
+       overrides live in the LATER @media block (after .modal-bg is
+       defined), to win the cascade. */
   }
   .logo-mark {
     display: inline-flex; align-items: center; gap: 12px;
@@ -1179,16 +1164,31 @@
     position: absolute; inset: 0; background: rgba(10,18,30,0.65);
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     z-index: 100;
-    display: flex; align-items: center; justify-content: center;
+    /* Same scrollable-overlay pattern as .screen — flex-start so a
+       tall dossier sits at the top with the parent handling vertical
+       scroll, and auto-margin on the child centres it when it fits.
+       On mobile Chrome the URL bar steals viewport height, so the
+       dossier's own max-height:100vh wasn't enough — making the
+       parent the scroll container and bumping bottom padding gives
+       reliable button reach. */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     padding: 20px;
     animation: fadeIn .25s ease;
   }
+  .modal-bg > * { margin: auto 0; }
   .dossier {
     background: var(--sp-paper);
     border-radius: 20px;
     width: 100%; max-width: 560px;
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
+    /* No max-height / inner overflow — the parent .modal-bg now
+       handles the scroll, so the dossier grows to fit its content.
+       Single scroll context = better UX on mobile (no nested scroll
+       gestures fighting each other). */
     box-shadow: var(--sp-shadow);
     animation: pop .3s cubic-bezier(.2,.8,.2,1);
   }
@@ -2017,6 +2017,36 @@
     }
     .day-ended-hint .deh-text {
       line-height: 1.25;
+    }
+
+    /* ---- Scroll-container bottom padding & card margins ----
+       Generous bottom space on the scroll container so the last
+       action button (Start your shift / Hit the road / Complete
+       drop-in) is reachable on Chrome mobile even when the URL bar
+       is visible. Combines:
+        - 96px raw padding for normal browsers
+        - safe-area-inset-bottom for iOS home indicator / Android nav
+        - extra margin under the card itself as belt-and-braces in
+          case the scroll container's padding is collapsed by a
+          flex/auto-margin interaction.
+       These rules live HERE (in the second mobile media query) rather
+       than the earlier one, so they win the cascade against
+       .modal-bg's default padding (which is defined between the two
+       media queries). */
+    .screen,
+    .modal-bg {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    }
+    .title-card,
+    .picker-card,
+    .shift-summary-card {
+      margin-bottom: 24px;
+    }
+    /* Dossier modal gets extra bottom margin — its action buttons
+       are larger (50px tall) so they need more headroom above the
+       URL bar to feel safely tappable on real devices. */
+    .dossier {
+      margin-bottom: 48px;
     }
   }
 
