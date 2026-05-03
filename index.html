@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_33.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_36.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -30,25 +30,46 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0; height: 100%; width: 100%;
-    overflow: hidden; background: #0a121e;
+    background: #0a121e;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--sp-ink);
     -webkit-font-smoothing: antialiased;
     user-select: none; -webkit-user-select: none;
-    touch-action: none;
+    /* overflow:hidden and touch-action:none used to live here, but they
+       blocked the title/picker/summary screens from scrolling on
+       mobile (where the cards can be taller than the viewport). The
+       canvas-area gameplay still needs them so swipes don't scroll
+       the page — they're now scoped to #game's children below. */
   }
 
-  #game { position: fixed; inset: 0; }
-  canvas#world { position: absolute; inset: 0; display: block; }
+  #game { position: fixed; inset: 0; overflow: hidden; }
+  canvas#world { position: absolute; inset: 0; display: block; touch-action: none; }
 
   /* ---------- Title screen ---------- */
   .screen {
     position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
+    /* Scrollable container — when the card inside is taller than the
+       viewport (typical on phones), the user can scroll vertically to
+       reach the buttons at the bottom. align-items: flex-start so the
+       card sits at the top when scrolling, but min-height + padding
+       keep it visually centred when it fits. */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 24px 0;
     background: radial-gradient(ellipse at top, #1a2a44 0%, #0a121e 70%);
     z-index: 50;
     animation: fadeIn 0.4s ease;
   }
+  /* Inner spacer trick — when the card fits, this auto-margin centres
+     it vertically. When the card is taller than the viewport, the
+     auto-margin collapses and the card sits at the top with the
+     overflow-y: auto on .screen letting the user scroll to reach
+     buttons at the bottom. */
+  .screen > * { margin: auto 0; }
   @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 
   .title-card {
@@ -105,8 +126,10 @@
     border-radius: 24px;
     padding: 32px 36px;
     max-width: 760px; width: calc(100% - 32px);
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
+    /* Card is fluid: parent .screen scrolls when card overflows the
+       viewport. We don't constrain card height — it grows to fit
+       all 4 cars + 5 characters + intro + actions, then .screen
+       lets the user scroll to reach them. */
     box-shadow: var(--sp-shadow);
     position: relative;
   }
@@ -191,8 +214,24 @@
   }
   .picker-back-link:hover { color: var(--sp-ink); }
   @media (max-width: 640px) {
+    /* Card grids — fewer columns so tiles stay legible on phones */
     .picker-grid.cars { grid-template-columns: repeat(2, 1fr); }
     .picker-grid.chars { grid-template-columns: repeat(3, 1fr); }
+
+    /* Tighter padding so the card occupies less vertical space —
+       reduces (but doesn't eliminate) the need to scroll. */
+    .title-card { padding: 28px 24px; }
+    .picker-card { padding: 24px 22px; }
+    .shift-summary-card { padding: 22px 20px; }
+    /* Hero text scales down on phones so headlines don't take a full
+       screen height each. */
+    .title-card h1 { font-size: 28px; }
+    .title-card p.subtitle { font-size: 13px; }
+    .picker-card h2 { font-size: 20px; }
+    /* Generous bottom padding inside the screen so the last button
+       (Start your shift / Hit the road / Continue) isn't flush
+       against the iframe edge — easier to tap. */
+    .screen { padding-bottom: 32px; }
   }
   .logo-mark {
     display: inline-flex; align-items: center; gap: 12px;
@@ -1946,7 +1985,7 @@
 </head>
 <body>
 <div id="game">
-  <canvas id="world" width="2560" height="1398" style="width: 1707px; height: 932px;"></canvas>
+  <canvas id="world" width="2368" height="1186" style="width: 1579px; height: 791px;"></canvas>
 
   <!-- Mini-map -->
   <div class="minimap-wrap" id="minimapWrap">
@@ -2139,7 +2178,7 @@
         <span class="logo-dot">S</span>
         <div class="brand-text">
           <div class="brand-name">SitePad</div>
-          <div class="brand-line">Built for hire · Integrated with Syrinx</div>
+          <div class="brand-line">Built for hire · Powered by Syrinx</div>
         </div>
       </div>
       <div class="title-divider"></div>
