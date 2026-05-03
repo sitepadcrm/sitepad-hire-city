@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_37.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_38.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -228,10 +228,24 @@
     .title-card h1 { font-size: 28px; }
     .title-card p.subtitle { font-size: 13px; }
     .picker-card h2 { font-size: 20px; }
-    /* Generous bottom padding inside the screen so the last button
-       (Start your shift / Hit the road / Continue) isn't flush
-       against the iframe edge — easier to tap. */
-    .screen { padding-bottom: 32px; }
+
+    /* Generous bottom space on the scroll container so the last
+       action button (Start your shift / Hit the road / Continue) is
+       reachable on Chrome mobile even when the URL bar is visible.
+       Combines:
+        - 96px raw padding for normal browsers
+        - safe-area-inset-bottom for iOS home indicator / Android nav
+        - extra margin under the card itself as belt-and-braces in
+          case the scroll container's padding is collapsed by a
+          flex/auto-margin interaction. */
+    .screen {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    }
+    .title-card,
+    .picker-card,
+    .shift-summary-card {
+      margin-bottom: 24px;
+    }
   }
   .logo-mark {
     display: inline-flex; align-items: center; gap: 12px;
@@ -2011,7 +2025,7 @@
 </head>
 <body>
 <div id="game">
-  <canvas id="world" width="2368" height="1186" style="width: 1579px; height: 791px;"></canvas>
+  <canvas id="world" width="2560" height="1398" style="width: 1707px; height: 932px;"></canvas>
 
   <!-- Mini-map -->
   <div class="minimap-wrap" id="minimapWrap">
