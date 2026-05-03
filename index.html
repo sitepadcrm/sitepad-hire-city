@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_41.html -->
+<!-- saved from url=(0061)file:///C:/Users/chris/Downloads/sitepad-hire-city_14_42.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -1784,6 +1784,23 @@
   .ai-panel.show { display: block; }
   .ai-panel h4 { margin: 0 0 4px; font-size: 14px; font-weight: 800; }
   .ai-panel .ai-sub { font-size: 12px; color: var(--sp-ink-soft); margin-bottom: 12px; }
+  /* Panel close button — small × in the top-right of each panel.
+     Larger tap target on touch devices than the original "tap the
+     toggle button again" dismiss path, which on mobile was hidden
+     beneath the open panel. */
+  .ai-panel-close {
+    position: absolute; top: 8px; right: 8px;
+    width: 32px; height: 32px;
+    background: var(--sp-cream); border: none; cursor: pointer;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sp-ink-soft); font-size: 20px; font-weight: 600;
+    line-height: 1;
+    padding: 0;
+  }
+  .ai-panel-close:hover { background: var(--sp-line); color: var(--sp-ink); }
+  /* h4 needs right padding so it doesn't run under the close button */
+  .ai-panel h4 { padding-right: 32px; }
 
   /* End-of-day screen */
   .end-card { max-width: 620px; }
@@ -2055,7 +2072,7 @@
 </head>
 <body>
 <div id="game">
-  <canvas id="world" width="2142" height="1089" style="width: 1428px; height: 726px;"></canvas>
+  <canvas id="world" width="2368" height="1186" style="width: 1579px; height: 791px;"></canvas>
 
   <!-- Mini-map -->
   <div class="minimap-wrap" id="minimapWrap">
@@ -2176,6 +2193,7 @@
 
   <!-- AI quick panel -->
   <div class="ai-panel" id="aiPanel">
+    <button class="ai-panel-close" id="aiPanelClose" aria-label="Close">×</button>
     <h4>SitePad AI</h4>
     <div class="ai-sub">Ask anything about your hire data</div>
     <div class="ai-suggestions" id="aiQuickSuggestions"></div>
@@ -2184,6 +2202,7 @@
 
   <!-- Inbox / Calendar panel -->
   <div class="ai-panel inbox-panel" id="inboxPanel">
+    <button class="ai-panel-close" id="inboxPanelClose" aria-label="Close">×</button>
     <h4>Inbox &amp; Calendar</h4>
     <div class="ai-sub">All synced from Outlook · auto-tagged to clients</div>
     <div class="feed-list" id="inboxFeed"></div>
@@ -9537,6 +9556,43 @@
     // clear badge
     document.getElementById('inboxBadge').style.display = 'none';
     blip(660, 0.06, 'sine', 0.06);
+  });
+
+  // ---------- Panel dismissal ----------
+  // Two ways to close the AI/Inbox panels (in addition to tapping
+  // the toggle button again, which used to be the only path but is
+  // hidden behind the panel itself on mobile):
+  //   1. The × close button inside each panel
+  //   2. Tapping anywhere outside the panel (and not on the toggle
+  //      button — that button has its own toggle logic)
+  function closePanels() {
+    document.getElementById('aiPanel').classList.remove('show');
+    document.getElementById('inboxPanel').classList.remove('show');
+  }
+  document.getElementById('aiPanelClose').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closePanels();
+  });
+  document.getElementById('inboxPanelClose').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closePanels();
+  });
+  // Tap-outside-to-close. Listen for clicks anywhere in the document;
+  // if the click is outside the open panel and not on either toggle
+  // button (which manages its own state), close.
+  document.addEventListener('click', (e) => {
+    const aiPanel = document.getElementById('aiPanel');
+    const inboxPanel = document.getElementById('inboxPanel');
+    const aiOpen = aiPanel.classList.contains('show');
+    const inboxOpen = inboxPanel.classList.contains('show');
+    if (!aiOpen && !inboxOpen) return;
+    // If click target is within either panel, do nothing
+    if (aiPanel.contains(e.target) || inboxPanel.contains(e.target)) return;
+    // If click target is one of the toggle buttons, let its own
+    // handler manage the state (the toggle button click is what
+    // opened the panel in the first place)
+    if (e.target.closest('#aiButton') || e.target.closest('#inboxBtn')) return;
+    closePanels();
   });
 
   // ---------- Title / Picker / End ----------
